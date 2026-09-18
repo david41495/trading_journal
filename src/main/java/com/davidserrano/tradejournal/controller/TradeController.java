@@ -1,6 +1,7 @@
 package com.davidserrano.tradejournal.controller;
 
 import java.net.URI;
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -36,64 +37,78 @@ public class TradeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Trade>> getAllTrades() {
-        return ResponseEntity.ok(tradeService.getAllTrades());
+    public ResponseEntity<List<Trade>> getAllTrades(Principal principal) {
+        return ResponseEntity.ok(
+                tradeService.getAllTrades(principal.getName()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Trade> getTradeById(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Principal principal) {
 
-        return ResponseEntity.ok(tradeService.getTradeById(id));
+        return ResponseEntity.ok(tradeService.getTradeById(
+                id, principal.getName()));
     }
 
     @GetMapping("/search/symbol")
     public ResponseEntity<List<Trade>> getTradesBySymbol(
-            @RequestParam String symbol) {
+            @RequestParam String symbol,
+            Principal principal) {
 
         return ResponseEntity.ok(
-                tradeService.getTradesBySymbol(symbol));
+                tradeService.getTradesBySymbol(symbol, principal.getName()));
     }
 
     @GetMapping("/search/date")
     public ResponseEntity<List<Trade>> getTradesByDate(
             @RequestParam
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate tradeDate) {
+            LocalDate tradeDate,
+            Principal principal) {
 
         return ResponseEntity.ok(
-                tradeService.getTradesByDate(tradeDate));
+                tradeService.getTradesByDate(
+                        tradeDate, principal.getName()));
     }
 
     @GetMapping("/search/asset-type")
     public ResponseEntity<List<Trade>> getTradesByAssetType(
-            @RequestParam AssetType assetType) {
+            @RequestParam AssetType assetType,
+            Principal principal) {
 
         return ResponseEntity.ok(
-                tradeService.getTradesByAssetType(assetType));
+                tradeService.getTradesByAssetType(
+                        assetType, principal.getName()));
     }
 
     @GetMapping("/search/direction")
     public ResponseEntity<List<Trade>> getTradesByDirection(
-            @RequestParam TradeDirection direction) {
+            @RequestParam TradeDirection direction,
+            Principal principal) {
 
         return ResponseEntity.ok(
-                tradeService.getTradesByDirection(direction));
+                tradeService.getTradesByDirection(
+                        direction, principal.getName()));
     }
 
     @GetMapping("/search/status")
     public ResponseEntity<List<Trade>> getTradesByStatus(
-            @RequestParam TradeStatus status) {
+            @RequestParam TradeStatus status,
+            Principal principal) {
 
         return ResponseEntity.ok(
-                tradeService.getTradesByStatus(status));
+                tradeService.getTradesByStatus(
+                        status, principal.getName()));
     }
 
     @PostMapping
     public ResponseEntity<Trade> createTrade(
-            @Valid @RequestBody Trade trade) {
+            @Valid @RequestBody Trade trade,
+            Principal principal) {
 
-        Trade savedTrade = tradeService.createTrade(trade);
+        Trade savedTrade = tradeService.createTrade(
+                trade, principal.getName());
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -109,17 +124,20 @@ public class TradeController {
     @PutMapping("/{id}")
     public ResponseEntity<Trade> updateTrade(
             @PathVariable Long id,
-            @Valid @RequestBody Trade trade) {
+            @Valid @RequestBody Trade trade,
+            Principal principal) {
 
-        Trade updatedTrade = tradeService.updateTrade(id, trade);
+        Trade updatedTrade = tradeService.updateTrade(
+                id, trade, principal.getName());
         return ResponseEntity.ok(updatedTrade);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrade(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Principal principal) {
 
-        tradeService.deleteTrade(id);
+        tradeService.deleteTrade(id, principal.getName());
         return ResponseEntity.noContent().build();
     }
 }

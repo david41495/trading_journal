@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -65,6 +66,22 @@ public class GlobalExceptionHandler {
                 Map.of());
 
         return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiError> handleResponseStatus(
+            ResponseStatusException exception,
+            HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.valueOf(
+                exception.getStatusCode().value());
+        ApiError error = createError(
+                status,
+                exception.getReason(),
+                request.getRequestURI(),
+                Map.of());
+
+        return ResponseEntity.status(status).body(error);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

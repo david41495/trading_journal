@@ -2,6 +2,7 @@ package com.davidserrano.tradejournal.repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -13,20 +14,24 @@ import com.davidserrano.tradejournal.model.AssetType;
 public interface TradeRepository extends JpaRepository<Trade, Long> {
 
 
-    List<Trade> findAllByOrderByTradeDateDescEntryTimeDesc();
+    List<Trade> findByOwnerIdOrderByTradeDateDescEntryTimeDesc(Long ownerId);
 
-    List<Trade> findBySymbolIgnoreCaseOrderByTradeDateDescEntryTimeDesc(
-            String symbol);
+    Optional<Trade> findByIdAndOwnerId(Long id, Long ownerId);
 
-    List<Trade> findByTradeDateOrderByEntryTimeDesc(
-            LocalDate tradeDate);
+    List<Trade> findByOwnerIsNull();
 
-    List <Trade> findByAssetTypeOrderByTradeDateDescEntryTimeDesc(
-    		AssetType assetType);
+    List<Trade> findByOwnerIdAndSymbolIgnoreCaseOrderByTradeDateDescEntryTimeDesc(
+            Long ownerId, String symbol);
 
-    List<Trade> findByDirectionOrderByTradeDateDescEntryTimeDesc(
-            TradeDirection direction);
+    List<Trade> findByOwnerIdAndTradeDateOrderByEntryTimeDesc(
+            Long ownerId, LocalDate tradeDate);
 
-    List<Trade> findByStatusOrderByTradeDateDescEntryTimeDesc(
-            TradeStatus status);
+    List<Trade> findByOwnerIdAndAssetTypeOrderByTradeDateDescEntryTimeDesc(
+            Long ownerId, AssetType assetType);
+
+    List<Trade> findByOwnerIdAndDirectionOrderByTradeDateDescEntryTimeDesc(
+            Long ownerId, TradeDirection direction);
+
+    List<Trade> findByOwnerIdAndStatusOrderByTradeDateDescEntryTimeDesc(
+            Long ownerId, TradeStatus status);
 }

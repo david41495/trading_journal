@@ -11,13 +11,25 @@ const notesSaveStatus = document.querySelector("#notesSaveStatus");
 const NOTES_STORAGE_KEY = "tradeJournal.commandments";
 let trades = [];
 let notesSaveTimer;
+let csrfToken = "";
+let csrfHeader = "X-XSRF-TOKEN";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   document.querySelector("#tradeDate").value = todayLocal();
   updateAssetFields();
   commandmentNotes.value = localStorage.getItem(NOTES_STORAGE_KEY) || "";
   showView(getViewFromHash());
-  loadTrades();
+  try {
+    await loadCurrentUser();
+    await refreshCsrf();
+    await loadTrades();
+  } catch (error) {
+    if (error.message === "UNAUTHORIZED") {
+      window.location.replace("/login.html");
+      return;
+    }
+    showMessage(tableMessage, error.message, "error");
+  }
 });
 
 document.querySelectorAll("[data-view-target]").forEach(link => {
@@ -38,6 +50,13 @@ document.querySelector(".brand").addEventListener("click", event => {
 assetType.addEventListener("change", updateAssetFields);
 assetFilter.addEventListener("change", renderTrades);
 document.querySelector("#refreshButton").addEventListener("click", loadTrades);
+document.querySelector("#logoutButton").addEventListener("click", async () => {
+  try {
+    await apiFetch("/api/auth/logout", { method: "POST" });
+  } finally {
+    window.location.replace("/login.html");
+  }
+});
 commandmentNotes.addEventListener("input", () => {
   notesSaveStatus.textContent = "Saving...";
   window.clearTimeout(notesSaveTimer);
@@ -65,7 +84,7 @@ form.addEventListener("submit", async event => {
   const trade = buildTradeFromForm();
 
   try {
-    const response = await fetch(API_URL, {
+    const response = await apiFetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(trade)
@@ -132,7 +151,7 @@ function buildTradeFromForm() {
 async function loadTrades() {
   hideMessage(tableMessage);
   try {
-    const response = await fetch(API_URL);
+    const response = await apiFetch(API_URL);
     if (!response.ok) throw new Error("Could not load trades.");
     trades = await response.json();
     renderTrades();
@@ -173,7 +192,7 @@ function renderStats() {
 async function deleteTrade(id) {
   if (!window.confirm(`Delete trade #${id}?`)) return;
   try {
-    const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    const response = await apiFetch(`${API_URL}/${id}`, { method: "DELETE" });
     if (!response.ok) throw new Error("The trade could not be deleted.");
     await loadTrades();
   } catch (error) { showMessage(tableMessage, error.message, "error"); }
@@ -187,4 +206,34 @@ function hideMessage(element) { element.textContent = ""; element.className = "m
 function formatApiError(error) {
   const fields = error.validationErrors ? Object.entries(error.validationErrors).map(([field, message]) => `${field}: ${message}`).join("; ") : "";
   return fields || error.message || "The request could not be completed.";
+}
+
+async function loadCurrentUser() {
+  const response = await fetch("/api/auth/me");
+  if (response.status === 401) throw new Error("UNAUTHORIZED");
+  if (!response.ok) throw new Error("Could not load your account.");
+  const user = await response.json();
+  document.querySelector("#currentUserName").textContent = user.displayName;
+}
+
+async function refreshCsrf() {
+  const response = await fetch("/api/auth/csrf");
+  if (!response.ok) throw new Error("Could not initialize request security.");
+  const body = await response.json();
+  csrfToken = body.token;
+  csrfHeader = body.headerName;
+}
+
+async function apiFetch(url, options = {}) {
+  const method = (options.method || "GET").toUpperCase();
+  const headers = new Headers(options.headers || {});
+  if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+    headers.set(csrfHeader, csrfToken);
+  }
+  const response = await fetch(url, { ...options, headers });
+  if (response.status === 401) {
+    window.location.replace("/login.html");
+    throw new Error("UNAUTHORIZED");
+  }
+  return response;
 }

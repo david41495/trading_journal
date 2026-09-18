@@ -9,76 +9,88 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.davidserrano.tradejournal.model.AssetType;
+import com.davidserrano.tradejournal.model.AppUser;
 import com.davidserrano.tradejournal.exception.TradeNotFoundException;
 import com.davidserrano.tradejournal.model.Trade;
 import com.davidserrano.tradejournal.model.TradeDirection;
 import com.davidserrano.tradejournal.model.TradeStatus;
 import com.davidserrano.tradejournal.repository.TradeRepository;
+import com.davidserrano.tradejournal.repository.UserRepository;
 
 @Service
 @Transactional
 public class TradeService {
 
     private final TradeRepository tradeRepository;
+    private final UserRepository userRepository;
 
-    public TradeService(TradeRepository tradeRepository) {
+    public TradeService(TradeRepository tradeRepository,
+            UserRepository userRepository) {
         this.tradeRepository = tradeRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
-    public List<Trade> getAllTrades() {
+    public List<Trade> getAllTrades(String email) {
         return tradeRepository
-                .findAllByOrderByTradeDateDescEntryTimeDesc();
+                .findByOwnerIdOrderByTradeDateDescEntryTimeDesc(
+                        requireUser(email).getId());
     }
 
     @Transactional(readOnly = true)
-    public Trade getTradeById(Long id) {
-        return tradeRepository.findById(id)
+    public Trade getTradeById(Long id, String email) {
+        return tradeRepository.findByIdAndOwnerId(
+                        id, requireUser(email).getId())
                 .orElseThrow(() -> new TradeNotFoundException(id));
     }
 
     @Transactional(readOnly = true)
-    public List<Trade> getTradesBySymbol(String symbol) {
+    public List<Trade> getTradesBySymbol(String symbol, String email) {
         return tradeRepository
-                .findBySymbolIgnoreCaseOrderByTradeDateDescEntryTimeDesc(
-                        symbol);
+                .findByOwnerIdAndSymbolIgnoreCaseOrderByTradeDateDescEntryTimeDesc(
+                        requireUser(email).getId(), symbol);
     }
 
     @Transactional(readOnly = true)
-    public List<Trade> getTradesByDate(LocalDate tradeDate) {
+    public List<Trade> getTradesByDate(LocalDate tradeDate, String email) {
         return tradeRepository
-                .findByTradeDateOrderByEntryTimeDesc(tradeDate);
+                .findByOwnerIdAndTradeDateOrderByEntryTimeDesc(
+                        requireUser(email).getId(), tradeDate);
     }
 
     @Transactional(readOnly = true)
     public List<Trade> getTradesByDirection(
-            TradeDirection direction) {
+            TradeDirection direction, String email) {
 
         return tradeRepository
-                .findByDirectionOrderByTradeDateDescEntryTimeDesc(
-                        direction);
+                .findByOwnerIdAndDirectionOrderByTradeDateDescEntryTimeDesc(
+                        requireUser(email).getId(), direction);
     }
 
     @Transactional(readOnly = true)
-    public List<Trade> getTradesByStatus(TradeStatus status) {
+    public List<Trade> getTradesByStatus(
+            TradeStatus status, String email) {
         return tradeRepository
-                .findByStatusOrderByTradeDateDescEntryTimeDesc(status);
+                .findByOwnerIdAndStatusOrderByTradeDateDescEntryTimeDesc(
+                        requireUser(email).getId(), status);
     }
 
     @Transactional(readOnly = true)
-    public List<Trade> getTradesByAssetType(AssetType assetType) {
+    public List<Trade> getTradesByAssetType(
+            AssetType assetType, String email) {
         return tradeRepository
-                .findByAssetTypeOrderByTradeDateDescEntryTimeDesc(
-                        assetType);
+                .findByOwnerIdAndAssetTypeOrderByTradeDateDescEntryTimeDesc(
+                        requireUser(email).getId(), assetType);
     }
 
-    public Trade createTrade(Trade trade) {
+    public Trade createTrade(Trade trade, String email) {
+        trade.setOwner(requireUser(email));
         prepareTradeForSave(trade);
         return tradeRepository.save(trade);
     }
 
-    public Trade updateTrade(Long id, Trade updatedTrade) {
-        Trade existingTrade = getTradeById(id);
+    public Trade updateTrade(Long id, Trade updatedTrade, String email) {
+        Trade existingTrade = getTradeById(id, email);
 
         existingTrade.setSymbol(updatedTrade.getSymbol());
         existingTrade.setDirection(updatedTrade.getDirection());
@@ -108,9 +120,15 @@ public class TradeService {
         return tradeRepository.save(existingTrade);
     }
 
-    public void deleteTrade(Long id) {
-        Trade trade = getTradeById(id);
+    public void deleteTrade(Long id, String email) {
+        Trade trade = getTradeById(id, email);
         tradeRepository.delete(trade);
+    }
+
+    private AppUser requireUser(String email) {
+        return userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Authenticated user was not found."));
     }
 
     private void prepareTradeForSave(Trade trade) {

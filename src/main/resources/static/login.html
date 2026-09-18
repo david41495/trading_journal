@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in | Trading Journal</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-intro">
+      <p class="eyebrow">Trading performance</p>
+      <h1>Build discipline from every trade.</h1>
+      <p>Track execution, review outcomes, and keep your trading process in one private journal.</p>
+      <ul>
+        <li>Stocks, options, and futures</li>
+        <li>Automatic profit and loss</li>
+        <li>Private, account-specific trade history</li>
+      </ul>
+    </section>
+
+    <section class="auth-card" aria-labelledby="authTitle">
+      <div class="auth-tabs" role="tablist" aria-label="Account access">
+        <button id="loginTab" class="auth-tab active" type="button" role="tab">Sign in</button>
+        <button id="registerTab" class="auth-tab" type="button" role="tab">Create account</button>
+      </div>
+
+      <div id="authMessage" class="message hidden" role="status"></div>
+
+      <form id="loginForm">
+        <p class="eyebrow">Welcome back</p>
+        <h2 id="authTitle">Sign in to your journal</h2>
+        <label>Email address
+          <input id="loginEmail" name="email" type="email" autocomplete="email" required>
+        </label>
+        <label>Password
+          <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="primary-button auth-submit" type="submit">Sign in</button>
+      </form>
+
+      <form id="registerForm" class="hidden">
+        <p class="eyebrow">New account</p>
+        <h2>Create your trading journal</h2>
+        <label>Display name
+          <input id="registerName" type="text" maxlength="80" autocomplete="name" required>
+        </label>
+        <label>Email address
+          <input id="registerEmail" type="email" maxlength="255" autocomplete="email" required>
+        </label>
+        <label>Password
+          <input id="registerPassword" type="password" minlength="10" maxlength="72" autocomplete="new-password" required>
+          <small>Use at least 10 characters.</small>
+        </label>
+        <button class="primary-button auth-submit" type="submit">Create account</button>
+      </form>
+    </section>
+  </main>
+  <script src="js/auth.js"></script>
+</body>
+</html>

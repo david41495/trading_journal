@@ -9,12 +9,18 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#">David's Trading Journal</a>
-    <nav aria-label="Main navigation">
-      <a href="#dashboard" data-view-target="dashboard">Dashboard</a>
-      <a href="#new-trade" data-view-target="new-trade">New Trade</a>
-      <a href="#trade-history" data-view-target="trade-history">History</a>
-      <a href="#commandments" data-view-target="commandments">Trading Commandments</a>
-    </nav>
+    <div class="topbar-actions">
+      <nav aria-label="Main navigation">
+        <a href="#dashboard" data-view-target="dashboard">Dashboard</a>
+        <a href="#new-trade" data-view-target="new-trade">New Trade</a>
+        <a href="#trade-history" data-view-target="trade-history">History</a>
+        <a href="#commandments" data-view-target="commandments">Trading Commandments</a>
+      </nav>
+      <div class="account-menu">
+        <span id="currentUserName"></span>
+        <button id="logoutButton" class="logout-button" type="button">Log out</button>
+      </div>
+    </div>
   </header>
 
   <main class="page-shell">
