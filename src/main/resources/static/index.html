@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>David's Trading Journal</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#">David's Trading Journal</a>
+    <nav aria-label="Main navigation">
+      <a href="#dashboard" data-view-target="dashboard">Dashboard</a>
+      <a href="#new-trade" data-view-target="new-trade">New Trade</a>
+      <a href="#trade-history" data-view-target="trade-history">History</a>
+      <a href="#commandments" data-view-target="commandments">Trading Commandments</a>
+    </nav>
+  </header>
+
+  <main class="page-shell">
+    <section id="dashboard" class="hero view-section" data-view="dashboard">
+      <div>
+        <p class="eyebrow">Trading performance</p>
+        <h1>Review the process, not just the outcome.</h1>
+        <p>Record stocks, options, and futures in one journal.</p>
+      </div>
+      <button id="refreshButton" class="secondary-button" type="button">Refresh data</button>
+    </section>
+
+    <section class="stats-grid view-section" data-view="dashboard" aria-label="Trading summary">
+      <article class="stat-card"><span>Total trades</span><strong id="totalTrades">0</strong></article>
+      <article class="stat-card"><span>Closed win rate</span><strong id="winRate">0%</strong></article>
+      <article class="stat-card"><span>Net P&amp;L</span><strong id="netProfitLoss">$0.00</strong></article>
+      <article class="stat-card"><span>Open trades</span><strong id="openTrades">0</strong></article>
+    </section>
+
+    <section id="new-trade" class="panel view-section hidden" data-view="new-trade">
+      <div class="section-heading">
+        <div><p class="eyebrow">Journal entry</p><h2>Add a trade</h2></div>
+        <p>Required fields are marked with an asterisk.</p>
+      </div>
+
+      <div id="formMessage" class="message hidden" role="status"></div>
+
+      <form id="tradeForm">
+        <div class="form-grid">
+          <label>Symbol *<input id="symbol" name="symbol" maxlength="25" placeholder="QQQ" required></label>
+          <label>Asset type *
+            <select id="assetType" name="assetType" required>
+              <option value="STOCK">Stock</option><option value="OPTION" selected>Option</option><option value="FUTURE">Future</option>
+            </select>
+          </label>
+          <label>Direction *
+            <select id="direction" name="direction" required><option value="LONG">Long</option><option value="SHORT">Short</option></select>
+          </label>
+          <label>Status *
+            <select id="status" name="status" required><option value="PLANNED">Planned</option><option value="OPEN">Open</option><option value="CLOSED" selected>Closed</option><option value="CANCELLED">Cancelled</option></select>
+          </label>
+
+          <label class="option-field">Call or put *
+            <select id="optionType" name="optionType"><option value="CALL">Call</option><option value="PUT">Put</option></select>
+          </label>
+          <label class="option-field">Strike price *<input id="strikePrice" name="strikePrice" type="number" min="0" step="0.01" placeholder="600.00"></label>
+          <label class="derivative-field">Expiration date *<input id="expirationDate" name="expirationDate" type="date"></label>
+          <label class="derivative-field">Contract code<input id="contractCode" name="contractCode" placeholder="QQQ-600-CALL"></label>
+
+          <label>Quantity *<input id="quantity" name="quantity" type="number" min="1" step="1" value="1" required></label>
+          <label>Multiplier *<input id="contractMultiplier" name="contractMultiplier" type="number" min="0.0001" step="0.0001" value="100" required></label>
+          <label>Trade date *<input id="tradeDate" name="tradeDate" type="date" required></label>
+          <label>Timeframe<input id="timeframe" name="timeframe" placeholder="5m"></label>
+
+          <label>Entry time *<input id="entryTime" name="entryTime" type="time" step="1" required></label>
+          <label>Exit time<input id="exitTime" name="exitTime" type="time" step="1"></label>
+          <label>Entry price *<input id="entryPrice" name="entryPrice" type="number" min="0.0001" step="0.0001" required></label>
+          <label>Exit price<input id="exitPrice" name="exitPrice" type="number" min="0.0001" step="0.0001"></label>
+
+          <label>Fees<input id="fees" name="fees" type="number" min="0" step="0.01" value="0"></label>
+          <label>Stop loss<input id="stopLoss" name="stopLoss" type="number" min="0" step="0.0001"></label>
+          <label>Target price<input id="targetPrice" name="targetPrice" type="number" min="0" step="0.0001"></label>
+          <label>Setup<input id="setup" name="setup" placeholder="First 15m breakout"></label>
+
+          <label class="full-width">Notes<textarea id="notes" name="notes" rows="3" placeholder="What did you see, execute well, or want to improve?"></textarea></label>
+        </div>
+        <div class="form-actions"><button class="primary-button" type="submit">Save trade</button><button id="resetButton" class="secondary-button" type="reset">Clear form</button></div>
+      </form>
+    </section>
+
+    <section id="trade-history" class="panel view-section hidden" data-view="trade-history">
+      <div class="section-heading">
+        <div><p class="eyebrow">Trade history</p><h2>Recent trades</h2></div>
+        <label class="filter-label">Asset filter
+          <select id="assetFilter"><option value="ALL">All assets</option><option value="STOCK">Stocks</option><option value="OPTION">Options</option><option value="FUTURE">Futures</option></select>
+        </label>
+      </div>
+      <div id="tableMessage" class="message hidden" role="status"></div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Date</th><th>Symbol</th><th>Asset</th><th>Direction</th><th>Quantity</th><th>Entry</th><th>Exit</th><th>Status</th><th>P&amp;L</th><th></th></tr></thead>
+          <tbody id="tradeTableBody"></tbody>
+        </table>
+      </div>
+      <p id="emptyState" class="empty-state hidden">No trades match this view yet.</p>
+    </section>
+
+    <section id="commandments" class="commandments-view view-section hidden" data-view="commandments">
+      <div class="commandments-header">
+        <p class="terminal-label">DAVID'S TRADING OPERATING SYSTEM</p>
+        <h2>Trading Commandments</h2>
+        <blockquote>“Never make a realized mistake twice. Limit our emotionally driven mishaps.”</blockquote>
+      </div>
+      <div class="terminal-notepad">
+        <div class="terminal-bar">
+          <div class="terminal-lights" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span>trading-commandments.txt</span>
+          <span id="notesSaveStatus">Saved locally</span>
+        </div>
+        <label class="sr-only" for="commandmentNotes">Trading commandments notes</label>
+        <textarea id="commandmentNotes" spellcheck="true" placeholder="> Write the rules that protect your capital and decision-making...&#10;&#10;1. Wait for confirmation.&#10;2. Respect the first 15-minute range.&#10;3. Never chase an entry."></textarea>
+        <div class="terminal-footer">
+          <span>Notes save automatically on this device.</span>
+          <button id="clearNotesButton" class="terminal-button" type="button">Clear notes</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
